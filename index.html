@@ -3,67 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Military Grade Vault</title>
+    <title>Vault X</title>
     <style>
-        :root { --bg: #0a0a0c; --surface: #16161a; --primary: #00ff41; /* Hacker Green */ --text: #ffffff; --danger: #ff4d4d; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        .screen { display: none; padding: 25px; flex-direction: column; height: 100%; box-sizing: border-box; }
+        :root {
+            --bg: #050505;
+            --surface: rgba(255, 255, 255, 0.05);
+            --primary: #00f2ff; /* Neon Cyan */
+            --accent: #7000ff;  /* Neon Purple */
+            --text: #ffffff;
+            --text-muted: #888;
+            --danger: #ff2a2a;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 10% 20%, rgba(112, 0, 255, 0.1) 0%, transparent 20%),
+                              radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.1) 0%, transparent 20%);
+            color: var(--text);
+            font-family: var(--font);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        .screen {
+            display: none;
+            padding: 25px;
+            flex-direction: column;
+            height: 100%;
+            box-sizing: border-box;
+            animation: fadeIn 0.4s ease-out;
+        }
         .active { display: flex; }
-        input { background: #1c1c24; border: 1px solid #333; color: var(--primary); padding: 15px; border-radius: 12px; margin-bottom: 12px; width: 100%; box-sizing: border-box; font-size: 16px; outline: none; }
-        input:focus { border-color: var(--primary); }
-        button { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-bottom: 10px; cursor: pointer; width: 100%; font-size: 16px; transition: 0.3s; }
-        button:active { transform: scale(0.98); opacity: 0.8; }
-        .card { background: var(--surface); padding: 18px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
-        .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: #000; font-size: 35px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.6); cursor: pointer; }
+
+        h1, h2 {
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, var(--primary), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        /* --- MODERN INPUTS --- */
+        input {
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 18px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* --- NEON BUTTONS --- */
+        button {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 16px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 242, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:active { transform: scale(0.96); }
+        button.secondary {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: none;
+            color: var(--text-muted);
+        }
+
+        /* --- CARDS --- */
+        .card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            padding: 20px;
+            border-radius: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0; /* Starts hidden for animation */
+        }
+        .card b { font-size: 1.1em; color: white; display: block; margin-bottom: 4px; }
+        .card small { color: var(--text-muted); font-size: 0.9em; }
+        .card button {
+            width: auto; margin: 0; padding: 10px 20px; font-size: 14px;
+            background: rgba(255, 255, 255, 0.1); box-shadow: none;
+        }
+
+        /* --- FLOATING ACTION BUTTON --- */
+        .fab {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 65px; height: 65px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white; font-size: 35px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.4);
+            cursor: pointer; transition: 0.3s;
+        }
+        .fab:active { transform: scale(0.9) rotate(90deg); }
+
+        /* --- UTILS --- */
+        .shaking { animation: shake 0.4s ease-in-out; border-color: var(--danger) !important; }
+        #toast {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: rgba(20, 20, 20, 0.9); padding: 12px 24px; border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+            opacity: 0; transition: 0.3s; pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
     <div id="setupScreen" class="screen active">
-        <h1 style="color:var(--primary)">Initialize Vault</h1>
-        <p style="color:#888;">Set a strong security question. If you forget the answer, your data is GONE forever.</p>
+        <h1>Initialize Vault</h1>
+        <p style="color:var(--text-muted); margin-bottom:30px;">Set a master key. This creates your encryption lock.</p>
         <input type="text" id="setupQ" placeholder="Security Question">
-        <input type="password" id="setupA" placeholder="Master Answer" autocomplete="off">
-        <button onclick="doSetup()">ENCRYPT & CREATE</button>
-        <button style="background:#222; color:white;" onclick="restoreFromCloud()">📂 RESTORE FROM CLOUD</button>
+        <input type="password" id="setupA" placeholder="Master Key">
+        <button onclick="doSetup()">Encrypt System</button>
+        <button class="secondary" onclick="restoreFromCloud()">☁️ Restore Backup</button>
     </div>
 
     <div id="loginScreen" class="screen">
-        <h1 id="loginQ" style="color:var(--primary)">...</h1>
-        <input type="password" id="loginA" placeholder="Answer" autocomplete="off">
-        <button onclick="doLogin()">UNLOCK VAULT</button>
-        <button style="background:#222; color:white;" onclick="restoreFromCloud()">📂 RESTORE FROM CLOUD</button>
+        <h1 id="loginQ">...</h1>
+        <input type="password" id="loginA" placeholder="Enter Key to Decrypt">
+        <button onclick="doLogin()">Unlock</button>
+        <button class="secondary" onclick="restoreFromCloud()">☁️ Restore Backup</button>
     </div>
 
     <div id="dashScreen" class="screen">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0; letter-spacing:1px;">SECURE VAULT</h2>
-            <button onclick="location.reload()" style="width:auto; padding:8px 15px; margin:0; background:transparent; color:var(--danger); border:1px solid var(--danger);">LOCK</button>
+            <h2 style="margin:0;">Vault X</h2>
+            <button onclick="location.reload()" style="width:auto; padding:8px 15px; margin:0; background:rgba(255,42,42,0.2); color:var(--danger); border:1px solid var(--danger);">LOCK</button>
         </div>
         
-        <input type="text" id="search" placeholder="🔍 Search Database..." oninput="render()">
-        <button onclick="syncToCloud()" id="syncBtn" style="background:#0066ff; color:white;">☁️ SYNC TO ENCRYPTED CLOUD</button>
+        <input type="text" id="search" placeholder="🔍 Search..." oninput="render()">
+        <button onclick="syncToCloud()" id="syncBtn" style="background: linear-gradient(45deg, #0066ff, #00ccff);">☁️ Sync to Cloud</button>
         
-        <div id="list" style="flex:1; overflow-y:auto; margin-top:10px;"></div>
+        <div id="list" style="flex:1; overflow-y:auto; padding-bottom: 80px;"></div>
         <div class="fab" onclick="showAdd()">+</div>
     </div>
 
     <div id="addScreen" class="screen">
-        <h2>Add Entry</h2>
-        <input type="text" id="nSite" placeholder="Site/Service Name">
-        <input type="text" id="nUser" placeholder="Username/Email">
+        <h2>New Entry</h2>
+        <input type="text" id="nSite" placeholder="Platform Name">
+        <input type="text" id="nUser" placeholder="Username / Email">
         <input type="text" id="nPass" placeholder="Password">
-        <button onclick="saveEntry()">PROTECT RECORD</button>
-        <button style="background:#222; color:white;" onclick="showDash()">CANCEL</button>
+        <button onclick="saveEntry()">Save & Encrypt</button>
+        <button class="secondary" onclick="showDash()">Cancel</button>
     </div>
 
+    <div id="toast">📋 Copied to Clipboard</div>
+
     <script>
+        // --- SUPABASE CONFIG ---
         const SB_URL = "https://qpfvtkyukvpbakm.supabase.co";
         const SB_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZnZ0a3l1a3ZwYmFrbWNnbm1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzOTUxMzEsImV4cCI6MjA4Njk3MTEzMX0.9bcDnUc2kmAMKwCbitgkWTmq7NpjYAdHwlFb8GiuuDM";
         const DB_KEY = "vault_v1";
         
         let db = [], key = null, question = "";
 
+        // --- CORE LOGIC ---
         window.onload = () => {
             const local = localStorage.getItem(DB_KEY);
             if(local) {
@@ -74,16 +202,10 @@
             }
         };
 
-        // MILITARY GRADE KEY DERIVATION (PBKDF2 with 600k iterations)
         async function genKey(pwd) {
             const enc = new TextEncoder();
             const km = await crypto.subtle.importKey("raw", enc.encode(pwd), {name:"PBKDF2"}, false, ["deriveKey"]);
-            return crypto.subtle.deriveKey({
-                name:"PBKDF2", 
-                salt:enc.encode("security184_ultra_salt"), 
-                iterations:600000, 
-                hash:"SHA-256"
-            }, km, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
+            return crypto.subtle.deriveKey({name:"PBKDF2", salt:enc.encode("vault_x_salt"), iterations:600000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
         }
 
         async function encrypt(data) {
@@ -102,18 +224,23 @@
         async function doSetup() {
             question = document.getElementById('setupQ').value;
             const ans = document.getElementById('setupA').value;
-            if(!question || !ans) return alert("Security fields cannot be empty.");
+            if(!question || !ans) return vibe('error');
             key = await genKey(ans);
             db = []; await saveLocal(); showDash();
         }
 
         async function doLogin() {
             const ans = document.getElementById('loginA').value;
-            if(!ans) return;
+            if(!ans) return vibe('error');
             key = await genKey(ans);
             const data = JSON.parse(localStorage.getItem(DB_KEY)).data;
             const res = await decrypt(data);
-            if(res) { db = res; showDash(); } else alert("ACCESS DENIED: Incorrect Answer.");
+            if(res) { db = res; showDash(); } 
+            else { 
+                document.getElementById('loginA').classList.add('shaking');
+                setTimeout(()=>document.getElementById('loginA').classList.remove('shaking'), 400);
+                vibe('error');
+            }
         }
 
         async function saveLocal() {
@@ -123,13 +250,18 @@
         }
 
         async function saveEntry() {
-            db.push({ id: Date.now(), s: document.getElementById('nSite').value, u: document.getElementById('nUser').value, p: document.getElementById('nPass').value });
-            await saveLocal(); showDash();
-            document.getElementById('nSite').value = ""; document.getElementById('nUser').value = ""; document.getElementById('nPass').value = "";
+            const s = document.getElementById('nSite').value;
+            const u = document.getElementById('nUser').value;
+            const p = document.getElementById('nPass').value;
+            if(!s || !p) return vibe('error');
+            db.push({ id: Date.now(), s, u, p });
+            await saveLocal(); 
+            document.getElementById('nSite').value=""; document.getElementById('nUser').value=""; document.getElementById('nPass').value="";
+            showDash();
         }
 
         async function syncToCloud() {
-            const btn = document.getElementById('syncBtn'); btn.innerText = "🛡️ SECURING...";
+            const btn = document.getElementById('syncBtn'); btn.innerText = "⏳ Encrypting & Uploading...";
             const local = JSON.parse(localStorage.getItem(DB_KEY));
             try {
                 const res = await fetch(`${SB_URL}/rest/v1/vault`, {
@@ -137,9 +269,10 @@
                     headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: 'me', encrypted_data: JSON.stringify(local.data), question: local.q })
                 });
-                if(res.ok) btn.innerText = "🔒 CLOUD SYNCED";
+                if(res.ok) { btn.innerText = "✅ Synced Securely"; vibe('success'); }
                 else throw new Error();
-            } catch(e) { alert("Sync Failed! Ensure RLS is disabled in Supabase."); btn.innerText = "❌ ERROR"; }
+            } catch(e) { alert("Sync Failed"); btn.innerText = "❌ Error"; vibe('error'); }
+            setTimeout(() => btn.innerText = "☁️ Sync to Cloud", 3000);
         }
 
         async function restoreFromCloud() {
@@ -149,23 +282,49 @@
                 if(rows.length) {
                     localStorage.setItem(DB_KEY, JSON.stringify({ q: rows[0].question, data: JSON.parse(rows[0].encrypted_data) }));
                     location.reload();
-                } else alert("No cloud data found.");
-            } catch(e) { alert("Restore failed."); }
+                } else alert("No Data Found");
+            } catch(e) { alert("Restore Failed"); }
         }
 
-        function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id=='dashScreen') render(); }
+        // --- UI & ANIMATION ---
+        function show(id) { 
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); 
+            document.getElementById(id).classList.add('active'); 
+            if(id=='dashScreen') render(); 
+        }
         function showDash() { show('dashScreen'); }
         function showAdd() { show('addScreen'); }
+        
         function render() {
             const list = document.getElementById('list'), term = document.getElementById('search').value.toLowerCase();
             list.innerHTML = "";
-            db.filter(i => i.s.toLowerCase().includes(term)).forEach(i => {
+            let delay = 0;
+            
+            db.filter(i => i.s.toLowerCase().includes(term) || i.u.toLowerCase().includes(term)).forEach(i => {
                 const d = document.createElement('div'); d.className='card';
-                d.innerHTML = `<div><b style="color:var(--primary)">${i.s}</b><br><small style="color:#888;">${i.u}</small></div><button style="width:auto;margin:0;padding:10px 15px;background:#333;color:white;" onclick="copyPass('${i.p}')">COPY</button>`;
+                // Staggered animation effect
+                d.style.animationDelay = delay + 'ms';
+                delay += 50; 
+                
+                d.innerHTML = `<div><b>${i.s}</b><small>${i.u}</small></div><button onclick="copyPass('${i.p}')">COPY</button>`;
                 list.appendChild(d);
             });
         }
-        function copyPass(p) { navigator.clipboard.writeText(p); alert("Password Copied to Clipboard."); }
+
+        function copyPass(p) { 
+            navigator.clipboard.writeText(p); 
+            vibe('success');
+            const t = document.getElementById('toast');
+            t.style.opacity = 1; t.style.transform = "translateX(-50%) translateY(0)";
+            setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateX(-50%) translateY(20px)"; }, 2000);
+        }
+
+        function vibe(type) {
+            if(navigator.vibrate) {
+                if(type === 'error') navigator.vibrate([50, 50, 50]);
+                if(type === 'success') navigator.vibrate(50);
+            }
+        }
     </script>
 </body>
 </html>
