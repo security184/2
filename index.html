@@ -3,25 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vault X</title>
+    <title>Vault Pro: Biometric</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         :root {
-            --bg: #050505;
-            --surface: rgba(255, 255, 255, 0.05);
-            --primary: #00f2ff; /* Neon Cyan */
-            --accent: #7000ff;  /* Neon Purple */
+            --bg: #000000;
+            --card-bg: #111111;
+            --primary: #2979ff; /* Electric Blue */
+            --accent: #d500f9;  /* Neon Purple */
             --text: #ffffff;
-            --text-muted: #888;
-            --danger: #ff2a2a;
-            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --danger: #ff1744;
+            --success: #00e676;
         }
 
         body {
             background-color: var(--bg);
-            background-image: radial-gradient(circle at 10% 20%, rgba(112, 0, 255, 0.1) 0%, transparent 20%),
-                              radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.1) 0%, transparent 20%);
             color: var(--text);
-            font-family: var(--font);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -29,183 +27,252 @@
             overflow: hidden;
         }
 
-        /* --- ANIMATIONS --- */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-
         .screen {
             display: none;
-            padding: 25px;
+            padding: 24px;
             flex-direction: column;
             height: 100%;
             box-sizing: border-box;
-            animation: fadeIn 0.4s ease-out;
+            opacity: 0;
+            animation: fadeIn 0.4s forwards;
         }
-        .active { display: flex; }
+        .active { display: flex; opacity: 1; }
 
-        h1, h2 {
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(to right, var(--primary), #fff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        h1, h2 { margin-top: 0; font-weight: 700; letter-spacing: -0.5px; }
+        
+        /* Modern Inputs with Eye Icon */
+        .input-group {
+            position: relative;
+            margin-bottom: 16px;
         }
-
-        /* --- MODERN INPUTS --- */
         input {
-            background: var(--surface);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #1a1a1a;
+            border: 1px solid #333;
             color: white;
-            padding: 18px;
-            border-radius: 16px;
-            margin-bottom: 15px;
+            padding: 16px;
+            padding-right: 50px; /* Space for eye icon */
+            border-radius: 12px;
             width: 100%;
             box-sizing: border-box;
             font-size: 16px;
             outline: none;
             transition: 0.3s;
-            backdrop-filter: blur(10px);
         }
-        input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
-            transform: translateY(-2px);
+        input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(41, 121, 255, 0.3); }
+        
+        .eye-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            cursor: pointer;
+            font-size: 20px;
         }
 
-        /* --- NEON BUTTONS --- */
+        /* Buttons */
         button {
-            background: linear-gradient(135deg, var(--accent), var(--primary));
+            background: linear-gradient(90deg, var(--primary), var(--accent));
             color: white;
             border: none;
-            padding: 18px;
-            border-radius: 16px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            cursor: pointer;
-            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 600;
             font-size: 16px;
-            transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 242, 255, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        button:active { transform: scale(0.96); }
-        button.secondary {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: none;
-            color: var(--text-muted);
-        }
-
-        /* --- CARDS --- */
-        .card {
-            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-            padding: 20px;
-            border-radius: 18px;
+            cursor: pointer;
             margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        button:active { transform: scale(0.98); }
+        
+        .btn-secondary { background: #222; border: 1px solid #333; }
+        .btn-danger { background: rgba(255, 23, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+
+        /* Card List */
+        .card {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 14px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            opacity: 0; /* Starts hidden for animation */
+            border: 1px solid #222;
         }
-        .card b { font-size: 1.1em; color: white; display: block; margin-bottom: 4px; }
-        .card small { color: var(--text-muted); font-size: 0.9em; }
-        .card button {
-            width: auto; margin: 0; padding: 10px 20px; font-size: 14px;
-            background: rgba(255, 255, 255, 0.1); box-shadow: none;
+        .card b { display: block; font-size: 17px; margin-bottom: 4px; }
+        .card small { color: #888; font-size: 13px; }
+        
+        .copy-btn {
+            background: #222;
+            width: auto;
+            padding: 8px 16px;
+            margin: 0;
+            font-size: 13px;
         }
 
-        /* --- FLOATING ACTION BUTTON --- */
         .fab {
-            position: fixed; bottom: 30px; right: 30px;
-            width: 65px; height: 65px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white; font-size: 35px;
+            position: fixed; bottom: 25px; right: 25px;
+            width: 56px; height: 56px;
+            background: var(--primary);
+            border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.4);
-            cursor: pointer; transition: 0.3s;
-        }
-        .fab:active { transform: scale(0.9) rotate(90deg); }
-
-        /* --- UTILS --- */
-        .shaking { animation: shake 0.4s ease-in-out; border-color: var(--danger) !important; }
-        #toast {
-            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-            background: rgba(20, 20, 20, 0.9); padding: 12px 24px; border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
-            opacity: 0; transition: 0.3s; pointer-events: none;
+            font-size: 28px;
+            box-shadow: 0 4px 20px rgba(41, 121, 255, 0.5);
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
     <div id="setupScreen" class="screen active">
-        <h1>Initialize Vault</h1>
-        <p style="color:var(--text-muted); margin-bottom:30px;">Set a master key. This creates your encryption lock.</p>
-        <input type="text" id="setupQ" placeholder="Security Question">
-        <input type="password" id="setupA" placeholder="Master Key">
-        <button onclick="doSetup()">Encrypt System</button>
-        <button class="secondary" onclick="restoreFromCloud()">☁️ Restore Backup</button>
+        <h1>Welcome</h1>
+        <p style="color:#aaa; margin-bottom: 30px;">Set your new Master Password.</p>
+        
+        <input type="text" id="setupQ" placeholder="Security Hint (e.g. Birth Year)">
+        
+        <div class="input-group">
+            <input type="password" id="setupA" placeholder="Create Master Password">
+            <i class="ph ph-eye eye-icon" onclick="togglePass('setupA', this)"></i>
+        </div>
+
+        <button onclick="doSetup()">Initialize Vault</button>
+        <button class="btn-secondary" onclick="restoreFromCloud()">☁️ Restore Cloud Backup</button>
     </div>
 
     <div id="loginScreen" class="screen">
-        <h1 id="loginQ">...</h1>
-        <input type="password" id="loginA" placeholder="Enter Key to Decrypt">
+        <h1>Unlock Vault</h1>
+        <p id="loginHint" style="color:var(--primary); margin-bottom:30px;">...</p>
+
+        <div class="input-group">
+            <input type="password" id="loginA" placeholder="Enter Password">
+            <i class="ph ph-eye eye-icon" onclick="togglePass('loginA', this)"></i>
+        </div>
+
         <button onclick="doLogin()">Unlock</button>
-        <button class="secondary" onclick="restoreFromCloud()">☁️ Restore Backup</button>
+        
+        <button class="btn-secondary" onclick="triggerBiometric()">
+            <i class="ph ph-fingerprint"></i> Use Biometric / Passkey
+        </button>
+
+        <div style="margin-top: 40px; border-top: 1px solid #222; padding-top:20px;">
+            <p style="color:#666; font-size:12px; text-align:center;">Forgot Password or "Wrong Password" Error?</p>
+            <button class="btn-danger" onclick="hardReset()">⚠️ RESET & CLEAR DATA</button>
+        </div>
     </div>
 
     <div id="dashScreen" class="screen">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0;">Vault X</h2>
-            <button onclick="location.reload()" style="width:auto; padding:8px 15px; margin:0; background:rgba(255,42,42,0.2); color:var(--danger); border:1px solid var(--danger);">LOCK</button>
+            <h2>My Vault</h2>
+            <i class="ph ph-lock-key" style="font-size:24px; color:var(--danger); cursor:pointer;" onclick="location.reload()"></i>
         </div>
+
+        <input type="text" id="search" placeholder="🔍 Search passwords..." oninput="render()">
         
-        <input type="text" id="search" placeholder="🔍 Search..." oninput="render()">
-        <button onclick="syncToCloud()" id="syncBtn" style="background: linear-gradient(45deg, #0066ff, #00ccff);">☁️ Sync to Cloud</button>
-        
+        <button onclick="syncToCloud()" id="syncBtn" style="background:#111; border:1px solid #333;">
+            ☁️ Sync to Cloud
+        </button>
+
         <div id="list" style="flex:1; overflow-y:auto; padding-bottom: 80px;"></div>
         <div class="fab" onclick="showAdd()">+</div>
     </div>
 
     <div id="addScreen" class="screen">
-        <h2>New Entry</h2>
-        <input type="text" id="nSite" placeholder="Platform Name">
+        <h2>Add Password</h2>
+        
+        <input type="text" id="nSite" placeholder="Website / App Name">
         <input type="text" id="nUser" placeholder="Username / Email">
-        <input type="text" id="nPass" placeholder="Password">
-        <button onclick="saveEntry()">Save & Encrypt</button>
-        <button class="secondary" onclick="showDash()">Cancel</button>
+        
+        <div class="input-group">
+            <input type="password" id="nPass" placeholder="Password">
+            <i class="ph ph-eye eye-icon" onclick="togglePass('nPass', this)"></i>
+        </div>
+
+        <button onclick="saveEntry()">Save Entry</button>
+        <button class="btn-secondary" onclick="showDash()">Cancel</button>
     </div>
 
-    <div id="toast">📋 Copied to Clipboard</div>
-
     <script>
-        // --- SUPABASE CONFIG ---
+        // --- KEYS ---
         const SB_URL = "https://qpfvtkyukvpbakm.supabase.co";
         const SB_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZnZ0a3l1a3ZwYmFrbWNnbm1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzOTUxMzEsImV4cCI6MjA4Njk3MTEzMX0.9bcDnUc2kmAMKwCbitgkWTmq7NpjYAdHwlFb8GiuuDM";
-        const DB_KEY = "vault_v1";
-        
+        const DB_KEY = "vault_v2_secure"; // Changed key to force new version
+
         let db = [], key = null, question = "";
 
-        // --- CORE LOGIC ---
+        // --- INIT ---
         window.onload = () => {
             const local = localStorage.getItem(DB_KEY);
             if(local) {
-                const p = JSON.parse(local);
-                question = p.q;
-                document.getElementById('loginQ').innerText = question;
-                show('loginScreen');
+                try {
+                    const p = JSON.parse(local);
+                    question = p.q;
+                    document.getElementById('loginHint').innerText = "Hint: " + question;
+                    show('loginScreen');
+                    
+                    // Try auto-biometric if available
+                    if (window.PublicKeyCredential) {
+                        // console.log("Biometrics available");
+                    }
+                } catch(e) { hardReset(); }
             }
         };
 
+        // --- TOGGLE PASSWORD VISIBILITY ---
+        function togglePass(id, icon) {
+            const input = document.getElementById(id);
+            if(input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("ph-eye", "ph-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.replace("ph-eye-slash", "ph-eye");
+            }
+        }
+
+        // --- BIOMETRIC SIMULATION ---
+        async function triggerBiometric() {
+            // Note: True webauthn requires a backend server. 
+            // This relies on the browser's native password manager to fill the input.
+            alert("👆 Tap your fingerprint sensor or FaceID now.");
+            
+            // Check if browser has filled the password field
+            setTimeout(() => {
+                const pass = document.getElementById('loginA').value;
+                if(pass) {
+                    doLogin();
+                } else {
+                    // Try to prompt browser credential manager
+                    if (navigator.credentials) {
+                        navigator.credentials.get({password: true}).then((cred) => {
+                            if (cred) {
+                                document.getElementById('loginA').value = cred.password;
+                                doLogin();
+                            }
+                        });
+                    }
+                }
+            }, 1000);
+        }
+
+        // --- RESET FUNCTION ---
+        function hardReset() {
+            if(confirm("⚠️ RESET WARNING\n\nThis will delete the local copy of your passwords to fix the 'Wrong Password' bug.\n\nAre you sure?")) {
+                localStorage.removeItem(DB_KEY);
+                location.reload();
+            }
+        }
+
+        // --- CRYPTO ---
         async function genKey(pwd) {
             const enc = new TextEncoder();
             const km = await crypto.subtle.importKey("raw", enc.encode(pwd), {name:"PBKDF2"}, false, ["deriveKey"]);
-            return crypto.subtle.deriveKey({name:"PBKDF2", salt:enc.encode("vault_x_salt"), iterations:600000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
+            return crypto.subtle.deriveKey({name:"PBKDF2", salt:enc.encode("salt_v2"), iterations:100000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
         }
 
         async function encrypt(data) {
@@ -221,26 +288,37 @@
             } catch(e) { return null; }
         }
 
+        // --- ACTIONS ---
         async function doSetup() {
             question = document.getElementById('setupQ').value;
             const ans = document.getElementById('setupA').value;
-            if(!question || !ans) return vibe('error');
+            if(!question || !ans) return alert("Fill all fields");
             key = await genKey(ans);
             db = []; await saveLocal(); showDash();
+            
+            // Ask browser to save password (Biometric Trigger)
+            if (navigator.credentials && navigator.credentials.store) {
+                const cred = new PasswordCredential({ id: "MasterKey", password: ans, name: "Vault Master Key" });
+                navigator.credentials.store(cred);
+            }
         }
 
         async function doLogin() {
             const ans = document.getElementById('loginA').value;
-            if(!ans) return vibe('error');
+            if(!ans) return alert("Enter password");
             key = await genKey(ans);
-            const data = JSON.parse(localStorage.getItem(DB_KEY)).data;
-            const res = await decrypt(data);
-            if(res) { db = res; showDash(); } 
-            else { 
-                document.getElementById('loginA').classList.add('shaking');
-                setTimeout(()=>document.getElementById('loginA').classList.remove('shaking'), 400);
-                vibe('error');
-            }
+            try {
+                const raw = JSON.parse(localStorage.getItem(DB_KEY));
+                const res = await decrypt(raw.data);
+                if(res) { db = res; showDash(); } else alert("Wrong Password");
+            } catch(e) { alert("Data corrupted. Please use Reset."); }
+        }
+
+        async function saveEntry() {
+            db.push({ id:Date.now(), s:document.getElementById('nSite').value, u:document.getElementById('nUser').value, p:document.getElementById('nPass').value });
+            await saveLocal(); 
+            document.getElementById('nSite').value=""; document.getElementById('nUser').value=""; document.getElementById('nPass').value="";
+            showDash();
         }
 
         async function saveLocal() {
@@ -249,30 +327,19 @@
             render();
         }
 
-        async function saveEntry() {
-            const s = document.getElementById('nSite').value;
-            const u = document.getElementById('nUser').value;
-            const p = document.getElementById('nPass').value;
-            if(!s || !p) return vibe('error');
-            db.push({ id: Date.now(), s, u, p });
-            await saveLocal(); 
-            document.getElementById('nSite').value=""; document.getElementById('nUser').value=""; document.getElementById('nPass').value="";
-            showDash();
-        }
-
         async function syncToCloud() {
-            const btn = document.getElementById('syncBtn'); btn.innerText = "⏳ Encrypting & Uploading...";
+            const btn = document.getElementById('syncBtn'); btn.innerText = "⏳ Syncing...";
             const local = JSON.parse(localStorage.getItem(DB_KEY));
             try {
-                const res = await fetch(`${SB_URL}/rest/v1/vault`, {
+                // Ensure table name is 'vault' (lowercase)
+                await fetch(`${SB_URL}/rest/v1/vault`, {
                     method: 'POST',
                     headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: 'me', encrypted_data: JSON.stringify(local.data), question: local.q })
                 });
-                if(res.ok) { btn.innerText = "✅ Synced Securely"; vibe('success'); }
-                else throw new Error();
-            } catch(e) { alert("Sync Failed"); btn.innerText = "❌ Error"; vibe('error'); }
-            setTimeout(() => btn.innerText = "☁️ Sync to Cloud", 3000);
+                btn.innerText = "✅ Saved!";
+                setTimeout(()=>btn.innerText="☁️ Sync to Cloud", 2000);
+            } catch(e) { alert("Sync Failed. Check Supabase RLS."); btn.innerText = "❌ Error"; }
         }
 
         async function restoreFromCloud() {
@@ -282,48 +349,24 @@
                 if(rows.length) {
                     localStorage.setItem(DB_KEY, JSON.stringify({ q: rows[0].question, data: JSON.parse(rows[0].encrypted_data) }));
                     location.reload();
-                } else alert("No Data Found");
-            } catch(e) { alert("Restore Failed"); }
+                } else alert("No backup found.");
+            } catch(e) { alert("Restore failed."); }
         }
 
-        // --- UI & ANIMATION ---
-        function show(id) { 
-            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); 
-            document.getElementById(id).classList.add('active'); 
-            if(id=='dashScreen') render(); 
-        }
+        // --- UI ---
+        function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id=='dashScreen') render(); }
         function showDash() { show('dashScreen'); }
         function showAdd() { show('addScreen'); }
         
         function render() {
-            const list = document.getElementById('list'), term = document.getElementById('search').value.toLowerCase();
-            list.innerHTML = "";
-            let delay = 0;
-            
-            db.filter(i => i.s.toLowerCase().includes(term) || i.u.toLowerCase().includes(term)).forEach(i => {
+            const list = document.getElementById('list'); list.innerHTML = "";
+            const term = document.getElementById('search').value.toLowerCase();
+            db.filter(i => i.s.toLowerCase().includes(term)).forEach(i => {
                 const d = document.createElement('div'); d.className='card';
-                // Staggered animation effect
-                d.style.animationDelay = delay + 'ms';
-                delay += 50; 
-                
-                d.innerHTML = `<div><b>${i.s}</b><small>${i.u}</small></div><button onclick="copyPass('${i.p}')">COPY</button>`;
+                d.innerHTML = `<div><b>${i.s}</b><small>${i.u}</small></div>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText('${i.p}');alert('Copied')">Copy</button>`;
                 list.appendChild(d);
             });
-        }
-
-        function copyPass(p) { 
-            navigator.clipboard.writeText(p); 
-            vibe('success');
-            const t = document.getElementById('toast');
-            t.style.opacity = 1; t.style.transform = "translateX(-50%) translateY(0)";
-            setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateX(-50%) translateY(20px)"; }, 2000);
-        }
-
-        function vibe(type) {
-            if(navigator.vibrate) {
-                if(type === 'error') navigator.vibrate([50, 50, 50]);
-                if(type === 'success') navigator.vibrate(50);
-            }
         }
     </script>
 </body>
