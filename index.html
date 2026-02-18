@@ -6,7 +6,7 @@
     <title>Vault Pro: Secure</title>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        :root { --bg: #050505; --surface: #121212; --primary: #00e5ff; --text: #ffffff; --font: 'Segoe UI', Roboto, sans-serif; }
+        :root { --bg: #000000; --surface: #121212; --primary: #00e5ff; --text: #ffffff; --font: 'Segoe UI', Roboto, sans-serif; }
         body { background-color: var(--bg); color: var(--text); font-family: var(--font); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
         @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -32,7 +32,7 @@
 
     <div id="setupScreen" class="screen active">
         <h1>Initialize</h1>
-        <p style="color:#666; margin-bottom: 30px;">Create your unshakeable encryption key.</p>
+        <p style="color:#666; margin-bottom: 30px;">Create your encryption key.</p>
         <input type="text" id="setupQ" placeholder="Security Question">
         <div class="input-wrapper">
             <input type="password" id="setupA" placeholder="Master Password">
@@ -57,7 +57,7 @@
             <h2>Vault</h2>
             <div style="display:flex; gap:10px;">
                 <button onclick="showSettings()" style="width:auto; padding:10px 15px; margin:0; background:#222; color:white;">⚙️</button>
-                <button onclick="location.reload()" style="width:auto; padding:10px 15px; margin:0; background:transparent; color:var(--danger); border:1px solid #ff2a2a; color:#ff2a2a;">LOCK</button>
+                <button onclick="location.reload()" style="width:auto; padding:10px 15px; margin:0; background:transparent; border:1px solid #ff2a2a; color:#ff2a2a;">LOCK</button>
             </div>
         </div>
         <input type="text" id="search" placeholder="🔍 Search..." oninput="render()">
@@ -68,12 +68,12 @@
 
     <div id="settingsScreen" class="screen">
         <h2>Settings</h2>
-        <p style="color:#666;">Verify current password to change it.</p>
-        <input type="password" id="oldPass" placeholder="Old Password">
+        <p style="color:#666;">Update your security.</p>
+        <input type="password" id="oldPass" placeholder="Current Password">
         <hr style="border:0; border-top:1px solid #222; margin:20px 0;">
         <input type="text" id="newQ" placeholder="New Question">
         <input type="password" id="newPass" placeholder="New Password">
-        <button onclick="doChangePass()">Update Credentials</button>
+        <button onclick="doChangePass()">Update Password</button>
         <button class="btn-outline" onclick="showDash()">Cancel</button>
     </div>
 
@@ -92,7 +92,7 @@
     <script>
         const SB_URL = "https://qpfvtkyukvpbakm.supabase.co";
         const SB_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZnZ0a3l1a3ZwYmFrbWNnbm1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzOTUxMzEsImV4cCI6MjA4Njk3MTEzMX0.9bcDnUc2kmAMKwCbitgkWTmq7NpjYAdHwlFb8GiuuDM";
-        const DB_KEY = "vault_v5_secure"; 
+        const DB_KEY = "vault_v7_final"; 
 
         let db = [], key = null, question = "";
 
@@ -104,18 +104,14 @@
                     question = p.q;
                     document.getElementById('hintText').innerText = "Hint: " + question;
                     show('loginScreen');
-                } catch(e) { 
-                    alert("Data error. Reinstall app."); 
-                    localStorage.removeItem(DB_KEY);
-                    location.reload();
-                }
+                } catch(e) { localStorage.removeItem(DB_KEY); location.reload(); }
             }
         };
 
         async function genKey(pwd) {
             const enc = new TextEncoder();
             const km = await crypto.subtle.importKey("raw", enc.encode(pwd), {name:"PBKDF2"}, false, ["deriveKey"]);
-            return crypto.subtle.deriveKey({name:"PBKDF2", salt:enc.encode("static_salt_v5"), iterations:100000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
+            return crypto.subtle.deriveKey({name:"PBKDF2", salt:enc.encode("salt_v7"), iterations:100000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
         }
 
         async function encrypt(data, k) {
@@ -134,7 +130,7 @@
         async function doSetup() {
             question = document.getElementById('setupQ').value;
             const ans = document.getElementById('setupA').value;
-            if(!question || !ans) return alert("All fields required");
+            if(!question || !ans) return alert("Fill all fields");
             key = await genKey(ans);
             db = []; await saveLocal(); showDash();
         }
@@ -145,11 +141,7 @@
             const tempKey = await genKey(ans);
             const raw = JSON.parse(localStorage.getItem(DB_KEY));
             const res = await decrypt(raw.data, tempKey);
-            if(res) { 
-                db = res; 
-                key = tempKey; 
-                showDash(); 
-            } else alert("Incorrect Password");
+            if(res) { db = res; key = tempKey; showDash(); } else alert("Incorrect Password");
         }
 
         async function saveEntry() {
@@ -168,43 +160,36 @@
         async function syncToCloud() {
             const btn = document.getElementById('syncBtn'); btn.innerText = "⏳ Connecting...";
             const local = JSON.parse(localStorage.getItem(DB_KEY));
-            
             try {
-                // Tries 'Vault' (Capital V) first
-                const res = await fetch(`${SB_URL}/rest/v1/Vault`, {
+                // FIXED: Uses small 'vault'
+                const res = await fetch(`${SB_URL}/rest/v1/vault`, {
                     method: 'POST',
                     headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: 'me', encrypted_data: JSON.stringify(local.data), question: local.q })
                 });
 
-                if(res.ok) {
+                if(res.ok) { 
                     btn.innerText = "✅ Synced!"; 
-                    setTimeout(()=>btn.innerText="☁️ Sync to Cloud", 2000);
-                } else {
-                    if(res.status === 401 || res.status === 403) {
-                        alert("🔒 BLOCKED BY SUPABASE (RLS)\n\nSolution: Go to Supabase > Table Editor. Click 'Disable RLS' button.");
-                    } else if(res.status === 404) {
-                        alert("🚫 TABLE NOT FOUND (404)\n\nSolution: In Supabase, rename your table to 'Vault' (Capital V).");
-                    } else {
-                        alert(`❌ Error Code: ${res.status}`);
-                    }
-                    btn.innerText = "❌ Failed";
+                    setTimeout(()=>btn.innerText="☁️ Sync to Cloud",2000); 
+                } else { 
+                    const txt = await res.text();
+                    if(txt.includes("ncrypted_data")) alert("ERROR: Your column is named 'ncrypted_data'. Please rename it to 'encrypted_data' in Supabase!");
+                    else alert(`Error: ${res.status} \nCheck Table Name 'vault' or Column Names.`);
+                    btn.innerText = "❌ Failed"; 
                 }
-            } catch(e) { 
-                alert("Network Error: Check internet."); 
-                btn.innerText = "❌ Error"; 
-            }
+            } catch(e) { alert("Network Error: " + e.message); btn.innerText = "❌ Error"; }
         }
 
         async function restoreFromCloud() {
             try {
-                const res = await fetch(`${SB_URL}/rest/v1/Vault?user_id=eq.me&select=*&order=id.desc&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } });
+                // FIXED: Uses small 'vault'
+                const res = await fetch(`${SB_URL}/rest/v1/vault?user_id=eq.me&select=*&order=id.desc&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } });
                 const rows = await res.json();
                 if(rows.length) {
                     localStorage.setItem(DB_KEY, JSON.stringify({ q: rows[0].question, data: JSON.parse(rows[0].encrypted_data) }));
                     location.reload();
                 } else alert("No backup found.");
-            } catch(e) { alert("Restore failed. Check RLS."); }
+            } catch(e) { alert("Restore failed. Check column names."); }
         }
 
         async function doChangePass() {
@@ -219,8 +204,7 @@
                 key = await genKey(newP);
                 question = newQ;
                 await saveLocal();
-                alert("Success! Password updated.");
-                showDash();
+                alert("Updated!"); showDash();
             } else alert("Old password incorrect.");
         }
 
@@ -240,5 +224,5 @@
         }
     </script>
 </body>
-            </html>
-            
+</html>
+
