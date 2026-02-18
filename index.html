@@ -3,23 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vault Pro: Biometric</title>
+    <title>Vault Pro: Unshakeable</title>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         :root {
-            --bg: #000000;
-            --card-bg: #111111;
-            --primary: #2979ff; /* Electric Blue */
-            --accent: #d500f9;  /* Neon Purple */
+            --bg: #050505;
+            --surface: #121212;
+            --primary: #00e5ff; /* Cyan */
+            --danger: #ff2a2a;
             --text: #ffffff;
-            --danger: #ff1744;
-            --success: #00e676;
+            --font: 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
             background-color: var(--bg);
             color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font);
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -27,181 +26,164 @@
             overflow: hidden;
         }
 
+        /* --- ADVANCED ANIMATIONS --- */
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); } }
+
         .screen {
             display: none;
-            padding: 24px;
+            padding: 25px;
             flex-direction: column;
             height: 100%;
             box-sizing: border-box;
-            opacity: 0;
-            animation: fadeIn 0.4s forwards;
+            animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .active { display: flex; opacity: 1; }
+        .active { display: flex; }
 
-        @keyframes fadeIn { to { opacity: 1; } }
+        h1, h2 { font-weight: 800; letter-spacing: -0.5px; margin-top: 0; }
 
-        h1, h2 { margin-top: 0; font-weight: 700; letter-spacing: -0.5px; }
-        
-        /* Modern Inputs with Eye Icon */
-        .input-group {
-            position: relative;
-            margin-bottom: 16px;
-        }
+        /* Modern Inputs */
+        .input-wrapper { position: relative; margin-bottom: 15px; }
         input {
-            background: #1a1a1a;
+            background: var(--surface);
             border: 1px solid #333;
             color: white;
-            padding: 16px;
-            padding-right: 50px; /* Space for eye icon */
-            border-radius: 12px;
+            padding: 18px;
+            border-radius: 14px;
             width: 100%;
             box-sizing: border-box;
             font-size: 16px;
             outline: none;
             transition: 0.3s;
         }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(41, 121, 255, 0.3); }
-        
-        .eye-icon {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #888;
-            cursor: pointer;
-            font-size: 20px;
+        input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 229, 255, 0.15); }
+        .toggle-eye {
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            color: #666; cursor: pointer; font-size: 20px;
         }
 
         /* Buttons */
         button {
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            color: white;
+            background: var(--primary);
+            color: #000;
             border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-weight: 600;
+            padding: 18px;
+            border-radius: 14px;
+            font-weight: 700;
             font-size: 16px;
             cursor: pointer;
             margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            width: 100%;
             transition: 0.2s;
         }
-        button:active { transform: scale(0.98); }
-        
-        .btn-secondary { background: #222; border: 1px solid #333; }
-        .btn-danger { background: rgba(255, 23, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+        button:active { transform: scale(0.97); }
+        .btn-outline { background: transparent; border: 1px solid #444; color: #aaa; }
+        .btn-danger { background: rgba(255, 42, 42, 0.1); border: 1px solid var(--danger); color: var(--danger); }
 
         /* Card List */
         .card {
-            background: var(--card-bg);
-            padding: 16px;
-            border-radius: 14px;
-            margin-bottom: 10px;
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border: 1px solid #222;
-        }
-        .card b { display: block; font-size: 17px; margin-bottom: 4px; }
-        .card small { color: #888; font-size: 13px; }
-        
-        .copy-btn {
-            background: #222;
-            width: auto;
-            padding: 8px 16px;
-            margin: 0;
-            font-size: 13px;
+            animation: slideUp 0.4s ease forwards;
         }
 
         .fab {
-            position: fixed; bottom: 25px; right: 25px;
-            width: 56px; height: 56px;
+            position: fixed; bottom: 30px; right: 30px;
+            width: 60px; height: 60px;
             background: var(--primary);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 28px;
-            box-shadow: 0 4px 20px rgba(41, 121, 255, 0.5);
+            font-size: 30px;
+            box-shadow: 0 10px 30px rgba(0, 229, 255, 0.3);
             cursor: pointer;
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
 <body>
 
     <div id="setupScreen" class="screen active">
-        <h1>Welcome</h1>
-        <p style="color:#aaa; margin-bottom: 30px;">Set your new Master Password.</p>
-        
-        <input type="text" id="setupQ" placeholder="Security Hint (e.g. Birth Year)">
-        
-        <div class="input-group">
-            <input type="password" id="setupA" placeholder="Create Master Password">
-            <i class="ph ph-eye eye-icon" onclick="togglePass('setupA', this)"></i>
+        <h1>Initialize</h1>
+        <p style="color:#666; margin-bottom: 30px;">Create your unshakeable encryption key.</p>
+        <input type="text" id="setupQ" placeholder="Security Question">
+        <div class="input-wrapper">
+            <input type="password" id="setupA" placeholder="Master Password">
+            <i class="ph ph-eye toggle-eye" onclick="toggle('setupA', this)"></i>
         </div>
-
-        <button onclick="doSetup()">Initialize Vault</button>
-        <button class="btn-secondary" onclick="restoreFromCloud()">☁️ Restore Cloud Backup</button>
+        <button onclick="doSetup()">Encrypt & Start</button>
+        <button class="btn-outline" onclick="restoreFromCloud()">☁️ Restore Backup</button>
     </div>
 
     <div id="loginScreen" class="screen">
-        <h1>Unlock Vault</h1>
-        <p id="loginHint" style="color:var(--primary); margin-bottom:30px;">...</p>
-
-        <div class="input-group">
+        <h1 id="loginLabel">Locked</h1>
+        <p id="hintText" style="color:var(--primary); margin-bottom:30px;">...</p>
+        
+        <div class="input-wrapper">
             <input type="password" id="loginA" placeholder="Enter Password">
-            <i class="ph ph-eye eye-icon" onclick="togglePass('loginA', this)"></i>
+            <i class="ph ph-eye toggle-eye" onclick="toggle('loginA', this)"></i>
         </div>
-
+        
         <button onclick="doLogin()">Unlock</button>
         
-        <button class="btn-secondary" onclick="triggerBiometric()">
-            <i class="ph ph-fingerprint"></i> Use Biometric / Passkey
-        </button>
-
-        <div style="margin-top: 40px; border-top: 1px solid #222; padding-top:20px;">
-            <p style="color:#666; font-size:12px; text-align:center;">Forgot Password or "Wrong Password" Error?</p>
-            <button class="btn-danger" onclick="hardReset()">⚠️ RESET & CLEAR DATA</button>
+        <div style="margin-top:auto; padding-top:20px; border-top:1px solid #222;">
+            <p style="text-align:center; color:#444; font-size:12px;">App glitching or wrong password?</p>
+            <button class="btn-danger" onclick="hardReset()">⚠️ Factory Reset (Delete Data)</button>
         </div>
     </div>
 
     <div id="dashScreen" class="screen">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2>My Vault</h2>
-            <i class="ph ph-lock-key" style="font-size:24px; color:var(--danger); cursor:pointer;" onclick="location.reload()"></i>
+            <h2>Vault</h2>
+            <div style="display:flex; gap:10px;">
+                <button onclick="showSettings()" style="width:auto; padding:10px 15px; margin:0; background:#222; color:white;">⚙️</button>
+                <button onclick="location.reload()" style="width:auto; padding:10px 15px; margin:0; background:transparent; color:var(--danger); border:1px solid var(--danger);">LOCK</button>
+            </div>
         </div>
 
-        <input type="text" id="search" placeholder="🔍 Search passwords..." oninput="render()">
-        
-        <button onclick="syncToCloud()" id="syncBtn" style="background:#111; border:1px solid #333;">
-            ☁️ Sync to Cloud
-        </button>
+        <input type="text" id="search" placeholder="🔍 Search..." oninput="render()">
+        <button onclick="syncToCloud()" id="syncBtn" style="background: linear-gradient(45deg, #00e5ff, #2979ff);">☁️ Sync to Cloud</button>
 
-        <div id="list" style="flex:1; overflow-y:auto; padding-bottom: 80px;"></div>
+        <div id="list" style="flex:1; overflow-y:auto; padding-bottom:80px;"></div>
         <div class="fab" onclick="showAdd()">+</div>
     </div>
 
-    <div id="addScreen" class="screen">
-        <h2>Add Password</h2>
+    <div id="settingsScreen" class="screen">
+        <h2>Settings</h2>
+        <p style="color:#666;">Verify current password to change it.</p>
         
-        <input type="text" id="nSite" placeholder="Website / App Name">
-        <input type="text" id="nUser" placeholder="Username / Email">
+        <input type="password" id="oldPass" placeholder="Old Password">
+        <hr style="border:0; border-top:1px solid #222; margin:20px 0;">
+        <input type="text" id="newQ" placeholder="New Question">
+        <input type="password" id="newPass" placeholder="New Password">
         
-        <div class="input-group">
-            <input type="password" id="nPass" placeholder="Password">
-            <i class="ph ph-eye eye-icon" onclick="togglePass('nPass', this)"></i>
-        </div>
+        <button onclick="doChangePass()">Update Credentials</button>
+        <button class="btn-outline" onclick="showDash()">Cancel</button>
+    </div>
 
-        <button onclick="saveEntry()">Save Entry</button>
-        <button class="btn-secondary" onclick="showDash()">Cancel</button>
+    <div id="addScreen" class="screen">
+        <h2>Add Entry</h2>
+        <input type="text" id="nSite" placeholder="Site Name">
+        <input type="text" id="nUser" placeholder="Username">
+        <div class="input-wrapper">
+            <input type="password" id="nPass" placeholder="Password">
+            <i class="ph ph-eye toggle-eye" onclick="toggle('nPass', this)"></i>
+        </div>
+        <button onclick="saveEntry()">Save</button>
+        <button class="btn-outline" onclick="showDash()">Cancel</button>
     </div>
 
     <script>
         // --- KEYS ---
         const SB_URL = "https://qpfvtkyukvpbakm.supabase.co";
         const SB_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZnZ0a3l1a3ZwYmFrbWNnbm1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzOTUxMzEsImV4cCI6MjA4Njk3MTEzMX0.9bcDnUc2kmAMKwCbitgkWTmq7NpjYAdHwlFb8GiuuDM";
-        const DB_KEY = "vault_v2_secure"; // Changed key to force new version
+        
+        const DB_KEY = "vault_v4_final"; 
 
         let db = [], key = null, question = "";
 
@@ -212,78 +194,28 @@
                 try {
                     const p = JSON.parse(local);
                     question = p.q;
-                    document.getElementById('loginHint').innerText = "Hint: " + question;
+                    document.getElementById('hintText').innerText = "Hint: " + question;
                     show('loginScreen');
-                    
-                    // Try auto-biometric if available
-                    if (window.PublicKeyCredential) {
-                        // console.log("Biometrics available");
-                    }
                 } catch(e) { hardReset(); }
             }
         };
 
-        // --- TOGGLE PASSWORD VISIBILITY ---
-        function togglePass(id, icon) {
-            const input = document.getElementById(id);
-            if(input.type === "password") {
-                input.type = "text";
-                icon.classList.replace("ph-eye", "ph-eye-slash");
-            } else {
-                input.type = "password";
-                icon.classList.replace("ph-eye-slash", "ph-eye");
-            }
-        }
-
-        // --- BIOMETRIC SIMULATION ---
-        async function triggerBiometric() {
-            // Note: True webauthn requires a backend server. 
-            // This relies on the browser's native password manager to fill the input.
-            alert("👆 Tap your fingerprint sensor or FaceID now.");
-            
-            // Check if browser has filled the password field
-            setTimeout(() => {
-                const pass = document.getElementById('loginA').value;
-                if(pass) {
-                    doLogin();
-                } else {
-                    // Try to prompt browser credential manager
-                    if (navigator.credentials) {
-                        navigator.credentials.get({password: true}).then((cred) => {
-                            if (cred) {
-                                document.getElementById('loginA').value = cred.password;
-                                doLogin();
-                            }
-                        });
-                    }
-                }
-            }, 1000);
-        }
-
-        // --- RESET FUNCTION ---
-        function hardReset() {
-            if(confirm("⚠️ RESET WARNING\n\nThis will delete the local copy of your passwords to fix the 'Wrong Password' bug.\n\nAre you sure?")) {
-                localStorage.removeItem(DB_KEY);
-                location.reload();
-            }
-        }
-
-        // --- CRYPTO ---
+        // --- CORE CRYPTO ---
         async function genKey(pwd) {
             const enc = new TextEncoder();
             const km = await crypto.subtle.importKey("raw", enc.encode(pwd), {name:"PBKDF2"}, false, ["deriveKey"]);
-            return crypto.subtle.deriveKey({name:"PBKDF2", salt:enc.encode("salt_v2"), iterations:100000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
+            return crypto.subtle.deriveKey({name:"PBKDF2", salt:enc.encode("static_salt_v4"), iterations:100000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
         }
 
-        async function encrypt(data) {
+        async function encrypt(data, k) {
             const iv = crypto.getRandomValues(new Uint8Array(12));
-            const enc = await crypto.subtle.encrypt({name:"AES-GCM", iv:iv}, key, new TextEncoder().encode(JSON.stringify(data)));
+            const enc = await crypto.subtle.encrypt({name:"AES-GCM", iv:iv}, k || key, new TextEncoder().encode(JSON.stringify(data)));
             return { iv: Array.from(iv), d: Array.from(new Uint8Array(enc)) };
         }
 
-        async function decrypt(pack) {
+        async function decrypt(pack, k) {
             try {
-                const dec = await crypto.subtle.decrypt({name:"AES-GCM", iv:new Uint8Array(pack.iv)}, key, new Uint8Array(pack.d));
+                const dec = await crypto.subtle.decrypt({name:"AES-GCM", iv:new Uint8Array(pack.iv)}, k || key, new Uint8Array(pack.d));
                 return JSON.parse(new TextDecoder().decode(dec));
             } catch(e) { return null; }
         }
@@ -292,28 +224,27 @@
         async function doSetup() {
             question = document.getElementById('setupQ').value;
             const ans = document.getElementById('setupA').value;
-            if(!question || !ans) return alert("Fill all fields");
+            if(!question || !ans) return alert("All fields required");
             key = await genKey(ans);
             db = []; await saveLocal(); showDash();
-            
-            // Ask browser to save password (Biometric Trigger)
-            if (navigator.credentials && navigator.credentials.store) {
-                const cred = new PasswordCredential({ id: "MasterKey", password: ans, name: "Vault Master Key" });
-                navigator.credentials.store(cred);
-            }
         }
 
         async function doLogin() {
             const ans = document.getElementById('loginA').value;
-            if(!ans) return alert("Enter password");
-            key = await genKey(ans);
+            if(!ans) return;
+            const tempKey = await genKey(ans);
             try {
                 const raw = JSON.parse(localStorage.getItem(DB_KEY));
-                const res = await decrypt(raw.data);
-                if(res) { db = res; showDash(); } else alert("Wrong Password");
-            } catch(e) { alert("Data corrupted. Please use Reset."); }
+                const res = await decrypt(raw.data, tempKey);
+                if(res) { 
+                    db = res; 
+                    key = tempKey; 
+                    showDash(); 
+                } else alert("Incorrect Password");
+            } catch(e) { alert("Data error. Please reset."); }
         }
 
+        // --- DATA ---
         async function saveEntry() {
             db.push({ id:Date.now(), s:document.getElementById('nSite').value, u:document.getElementById('nUser').value, p:document.getElementById('nPass').value });
             await saveLocal(); 
@@ -327,47 +258,99 @@
             render();
         }
 
+        // --- CLOUD SYNC (DEBUG MODE) ---
         async function syncToCloud() {
-            const btn = document.getElementById('syncBtn'); btn.innerText = "⏳ Syncing...";
+            const btn = document.getElementById('syncBtn'); btn.innerText = "⏳ Connecting...";
             const local = JSON.parse(localStorage.getItem(DB_KEY));
+            
             try {
-                // Ensure table name is 'vault' (lowercase)
-                await fetch(`${SB_URL}/rest/v1/vault`, {
+                // IMPORTANT: USING CAPITAL 'Vault'
+                const res = await fetch(`${SB_URL}/rest/v1/Vault`, {
                     method: 'POST',
                     headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: 'me', encrypted_data: JSON.stringify(local.data), question: local.q })
                 });
-                btn.innerText = "✅ Saved!";
-                setTimeout(()=>btn.innerText="☁️ Sync to Cloud", 2000);
-            } catch(e) { alert("Sync Failed. Check Supabase RLS."); btn.innerText = "❌ Error"; }
+
+                if(res.ok) {
+                    btn.innerText = "✅ Synced!"; 
+                    setTimeout(()=>btn.innerText="☁️ Sync to Cloud", 2000);
+                } else {
+                    // Specific Error Reporting
+                    if(res.status === 401 || res.status === 403) {
+                        alert("❌ Security Blocked (401/403)\n\nGO TO SUPABASE > TABLE EDITOR > CLICK 'DISABLE RLS'");
+                    } else if(res.status === 404) {
+                        alert("❌ Table Not Found (404)\n\nIn Supabase, is your table named 'Vault' (Capital V)?");
+                    } else {
+                        alert(`❌ Error Code: ${res.status}\n${await res.text()}`);
+                    }
+                    btn.innerText = "❌ Failed";
+                }
+            } catch(e) { 
+                alert("Network Error. Check internet connection."); 
+                btn.innerText = "❌ Error"; 
+            }
         }
 
         async function restoreFromCloud() {
             try {
-                const res = await fetch(`${SB_URL}/rest/v1/vault?user_id=eq.me&select=*&order=id.desc&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } });
+                const res = await fetch(`${SB_URL}/rest/v1/Vault?user_id=eq.me&select=*&order=id.desc&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } });
                 const rows = await res.json();
                 if(rows.length) {
                     localStorage.setItem(DB_KEY, JSON.stringify({ q: rows[0].question, data: JSON.parse(rows[0].encrypted_data) }));
                     location.reload();
                 } else alert("No backup found.");
-            } catch(e) { alert("Restore failed."); }
+            } catch(e) { alert("Restore failed. Check RLS or Table Name."); }
         }
 
-        // --- UI ---
+        // --- SETTINGS: CHANGE PASSWORD ---
+        async function doChangePass() {
+            const oldP = document.getElementById('oldPass').value;
+            const newQ = document.getElementById('newQ').value;
+            const newP = document.getElementById('newPass').value;
+            if(!oldP || !newQ || !newP) return alert("Fill all fields");
+            const oldKeyCheck = await genKey(oldP);
+            const raw = JSON.parse(localStorage.getItem(DB_KEY));
+            const verify = await decrypt(raw.data, oldKeyCheck);
+            if(verify) {
+                key = await genKey(newP);
+                question = newQ;
+                await saveLocal();
+                alert("Success! Password updated.");
+                showDash();
+            } else alert("Old password incorrect.");
+        }
+
+        function hardReset() {
+            if(confirm("Factory Reset: Delete all local data?")) {
+                localStorage.removeItem(DB_KEY);
+                location.reload();
+            }
+        }
+
+        // --- UI UTILS ---
         function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id=='dashScreen') render(); }
         function showDash() { show('dashScreen'); }
         function showAdd() { show('addScreen'); }
+        function showSettings() { show('settingsScreen'); }
         
+        function toggle(id, icon) {
+            const x = document.getElementById(id);
+            x.type = x.type === "password" ? "text" : "password";
+            icon.classList.toggle("ph-eye-slash");
+        }
+
         function render() {
             const list = document.getElementById('list'); list.innerHTML = "";
             const term = document.getElementById('search').value.toLowerCase();
-            db.filter(i => i.s.toLowerCase().includes(term)).forEach(i => {
+            db.filter(i => i.s.toLowerCase().includes(term)).forEach((i, idx) => {
                 const d = document.createElement('div'); d.className='card';
+                d.style.animationDelay = (idx * 0.05) + 's'; 
                 d.innerHTML = `<div><b>${i.s}</b><small>${i.u}</small></div>
-                <button class="copy-btn" onclick="navigator.clipboard.writeText('${i.p}');alert('Copied')">Copy</button>`;
+                <button style="width:auto;margin:0;padding:8px 15px;background:#222;" onclick="navigator.clipboard.writeText('${i.p}');alert('Copied')">Copy</button>`;
                 list.appendChild(d);
             });
         }
     </script>
 </body>
-</html>
+            </html>
+            
