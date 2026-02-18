@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cloud Vault (JSONBin)</title>
+    <style>
+        :root {
+            --bg: #0f0f12;
+            --surface: #1e1e24;
+            --primary: #FFD700; /* Gold */
+            --text: #ffffff;
+            --danger: #ef233c;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .screen { display: none; padding: 20px; flex-direction: column; height: 100%; box-sizing: border-box; }
+        .active { display: flex; }
+        
+        input {
+            background: #2b2b36; border: 1px solid #444; color: white;
+            padding: 15px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box;
+        }
+        button {
+            background: var(--primary); color: #000; border: none;
+            padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; cursor: pointer; width: 100%;
+        }
+        .card {
+            background: var(--surface); padding: 15px; border-radius: 8px;
+            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .fab {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 50px; height: 50px; border-radius: 50%;
+            background: var(--primary); color: #000; font-size: 30px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="setupScreen" class="screen active">
+        <h1>Setup Vault</h1>
+        <p>Create a security question.</p>
+        <input type="text" id="setupQ" placeholder="Question (e.g. First pet?)">
+        <input type="password" id="setupA" placeholder="Answer (Your Key)">
+        <button onclick="doSetup()">Create Vault</button>
+        <button style="background:#333; color:white;" onclick="restoreFromCloud()">📂 Restore from Cloud</button>
+    </div>
+
+    <div id="loginScreen" class="screen">
+        <h1 id="loginQ">...</h1>
+        <input type="password" id="loginA" placeholder="Answer">
+        <button onclick="doLogin()">Unlock</button>
+        <button style="background:#333; color:white;" onclick="restoreFromCloud()">📂 Restore from Cloud</button>
+    </div>
+
+    <div id="dashScreen" class="screen">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>My Passwords</h2>
+            <button onclick="location.reload()" style="width:auto; background:transparent; color:var(--danger);">LOCK</button>
+        </div>
+        
+        <button onclick="syncToCloud()" id="syncBtn">☁️ Sync to Cloud</button>
+        
+        <div id="list" style="flex:1; overflow-y:auto; margin-top:10px;"></div>
+
+        <div class="fab" onclick="showAdd()">+</div>
+    </div>
+
+    <div id="addScreen" class="screen">
+        <h2>Add Entry</h2>
+        <input type="text" id="nSite" placeholder="Site">
+        <input type="text" id="nUser" placeholder="Username">
+        <input type="text" id="nPass" placeholder="Password">
+        <button onclick="saveEntry()">Save</button>
+        <button style="background:#333; color:white;" onclick="showDash()">Cancel</button>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const DB_KEY = "vault_jsonbin_v1";
+        
+        // YOUR KEYS ARE AUTOMATICALLY FILLED HERE
+        const API_KEY = "$2a$10$Qvn9phjpVcjiqg1lccwuc.UCTIpR0c7urEbjFhPE8Dlm1t/eoQcTe"; 
+        const BIN_ID  = "699528a7ae596e708f332a4a"; 
+
+        let db = [];
+        let key = null;
+        let question = "";
+
+        // --- CORE LOGIC ---
+        window.onload = () => {
+            if(localStorage.getItem(DB_KEY)) {
+                try {
+                    const data = JSON.parse(localStorage.getItem(DB_KEY));
+                    question = data.q;
+                    document.getElementById('loginQ').innerText = question;
+                    show('loginScreen');
+                } catch(e) { show('setupScreen'); }
+            } else { show('setupScreen'); }
+        };
+
+        async function genKey(pwd) {
+            const enc = new TextEncoder();
+            const km = await crypto.subtle.importKey("raw", enc.encode(pwd), {name:"PBKDF2"}, false, ["deriveKey"]);
+            return crypto.subtle.deriveKey({name:"PBKDF2", salt:enc.encode("salt"), iterations:100000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
+        }
+
+        async function encrypt(data) {
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const enc = await crypto.subtle.encrypt({name:"AES-GCM", iv:iv}, key, new TextEncoder().encode(JSON.stringify(data)));
+            return { iv: Array.from(iv), d: Array.from(new Uint8Array(enc)) };
+        }
+
+        async function decrypt(pack) {
+            try {
+                const dec = await crypto.subtle.decrypt({name:"AES-GCM", iv:new Uint8Array(pack.iv)}, key, new Uint8Array(pack.d));
+                return JSON.parse(new TextDecoder().decode(dec));
+            } catch(e) { return null; }
+        }
+
+        async function doSetup() {
+            const q = document.getElementById('setupQ').value;
+            const a = document.getElementById('setupA').value;
+            if(!q || !a) return alert("Fill all");
+            question = q;
+            key = await genKey(a);
+            db = [];
+            await saveLocal();
+            showDash();
+        }
+
+        async function doLogin() {
+            const a = document.getElementById('loginA').value;
+            key = await genKey(a);
+            const raw = JSON.parse(localStorage.getItem(DB_KEY));
+            const res = await decrypt(raw.data);
+            if(res) { db = res; showDash(); } else { alert("Wrong Answer"); }
+        }
+
+        async function saveLocal() {
+            const enc = await encrypt(db);
+            localStorage.setItem(DB_KEY, JSON.stringify({ q: question, data: enc }));
+            render();
+        }
+
+        async function saveEntry() {
+            db.push({ id:Date.now(), s: document.getElementById('nSite').value, u: document.getElementById('nUser').value, p: document.getElementById('nPass').value });
+            await saveLocal();
+            document.getElementById('nSite').value = ""; document.getElementById('nPass').value = "";
+            showDash();
+        }
+
+        // --- CLOUD SYNC (JSONBin) ---
+        async function syncToCloud() {
+            const btn = document.getElementById('syncBtn');
+            btn.innerText = "⏳ Uploading...";
+            
+            // Get the encrypted local data (Safe to upload)
+            const rawData = localStorage.getItem(DB_KEY);
+
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: rawData
+                });
+                btn.innerText = "✅ Saved to Cloud!";
+                setTimeout(() => btn.innerText = "☁️ Sync to Cloud", 3000);
+            } catch(e) {
+                alert("Upload failed. Check internet.");
+                btn.innerText = "❌ Error";
+            }
+        }
+
+        // --- RESTORE FROM CLOUD ---
+        async function restoreFromCloud() {
+            const btn = document.querySelector('button[onclick="restoreFromCloud()"]');
+            btn.innerText = "⏳ Downloading...";
+
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                const json = await response.json();
+                
+                // Save the downloaded (encrypted) data to local storage
+                // JSONBin wraps data in a "record" object usually
+                const vaultData = json.record || json;
+                
+                if(vaultData.q && vaultData.data) {
+                    localStorage.setItem(DB_KEY, JSON.stringify(vaultData));
+                    alert("Backup Restored! Please answer the question to unlock.");
+                    location.reload();
+                } else {
+                    alert("Cloud bin is empty or invalid.");
+                }
+
+            } catch(e) {
+                alert("Download failed.");
+            }
+            btn.innerText = "📂 Restore from Cloud";
+        }
+
+        // --- UI ---
+        function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id=='dashScreen') render(); }
+        function showDash() { show('dashScreen'); }
+        function showAdd() { show('addScreen'); }
+        function render() {
+            const list = document.getElementById('list'); list.innerHTML = "";
+            db.forEach(i => {
+                const d = document.createElement('div'); d.className='card';
+                d.innerHTML = `<div><b>${i.s}</b><br><small>${i.u}</small></div> <button style="width:auto;margin:0;" onclick="navigator.clipboard.writeText('${i.p}')">Copy</button>`;
+                list.appendChild(d);
+            });
+        }
+    </script>
+</body>
+</html>
